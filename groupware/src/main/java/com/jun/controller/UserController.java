@@ -3,6 +3,7 @@ package com.jun.controller;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +18,9 @@ public class UserController {
 	
 	@Autowired
 	private UserService userService;
+	
+	@Autowired
+	private BCryptPasswordEncoder bCryptPasswordEncoder;
 	
 	@RequestMapping(value = {"","/"}, method = RequestMethod.GET)
 	public String hello() {
@@ -48,11 +52,13 @@ public class UserController {
 			String strTemp = temp.toString();
 			strTemp = strTemp.substring(0,8);
 			user.setCode(strTemp);
+			user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 			User userRe = userService.join(user);
 			return userRe;
 		}
 		else {
 			if(userService.existsByCode(user.getCode())) {
+				user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
 				User userRe = userService.join(user);
 				return userRe;
 			}
