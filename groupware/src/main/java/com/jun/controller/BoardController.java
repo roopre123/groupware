@@ -8,9 +8,15 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,9 +45,18 @@ public class BoardController {
 	
 	private static final String Path = "/Users/roopre/data/projectPath";
 	
+	@PreAuthorize("isAuthenticated()")
 	@RequestMapping(value = "/boardList", method = RequestMethod.GET)
-	public String boardList() {
+	public String boardList(@PageableDefault (size =10, sort="id", direction= Sort.Direction.DESC ) Pageable pageable,
+			Model model, Board board, User user) {
 		System.out.println("boardListController");
+		
+		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User userCode = userService.findCodeByUsername(userDetail.getUsername());
+		
+		Page<Board> boardList = boardService.boardList(userCode.getCode(),pageable);
+		model.addAttribute("boardList", boardList);
+		
 		return "board/boardList";
 	}
 	
@@ -50,6 +65,7 @@ public class BoardController {
 	public String boardForm() {
 		return "board/boardForm";
 	}
+	
 //	@RequestMapping(value = "/boardWrite", method = RequestMethod.POST)
 //	public ResponseEntity<?> boardWrite(@RequestParam("files") MultipartFile[] multiFiles,
 //			Model model, Board board){
@@ -96,9 +112,10 @@ public class BoardController {
 	@RequestMapping(value = "/boardWrite", method = RequestMethod.POST)
 	public ResponseEntity<?> boardWrite(@RequestParam("filess") List<MultipartFile> multiFiles,
 			Model model,Board board,@RequestParam("username") String username){
+		
 		Map<String, Object> result = new HashMap<>();
-		System.out.println("test.....");
-		System.out.println(username);
+		
+		System.out.println("boardWrite()");
 		User user = userService.findByUsername(username);
 		board.setUser(user);
 		board.setCode(user.getCode());
@@ -113,10 +130,6 @@ public class BoardController {
 			for (MultipartFile file : multiFiles) {
 				if(!file.isEmpty()) {
 					
-					System.out.println("Path : " + Path);
-					System.out.println("file.getOriginalFilename : " + file.getOriginalFilename());
-					System.out.println("file size : " + file.getSize());
-					
 					uuid = UUID.randomUUID().toString();
 					orginFileName = file.getOriginalFilename();
 					fileExtension = orginFileName.substring(orginFileName.lastIndexOf("."), orginFileName.length());
@@ -127,7 +140,6 @@ public class BoardController {
 					fileList.add(files);
 					files.setBoard(test);
 					
-					System.out.println("dest : " + physicalPath + pyscFileName );
 					File dest = new File(physicalPath + pyscFileName);
 					file.transferTo(dest);
 					filesService.savefile(files);
@@ -142,6 +154,14 @@ public class BoardController {
 			result.put("message", e.getMessage());
 		}	
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+	
+	@RequestMapping("/boardView")
+	public String boardView(Board board, Model model) {
+		
+		return null;
+		
+		
 	}
 	
 }

@@ -1,10 +1,136 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="UTF-8">
-<title>Insert title here</title>
+<meta charset="UTF-8" http-equiv="Content-Type" 
+    name="viewport" content="width=device-width, initial-scale=1">
+<title>게시판</title>
+<link rel="stylesheet" th:href="@{/css/bootstrap.css}" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script th:src="@{/js/jquery.min.js}"></script>
+<script type="text/javascript">
+	function goPost(path, params, method) {
+		method = method || "POST";
+		var form = document.createElement("form");
+		form.setAttribute("method", method);
+		form.setAttribute("action", path);
+		for ( var key in params) {
+			var hiddenField = document.createElement("input");
+			hiddenField.setAttribute("type", "hidden");
+			hiddenField.setAttribute("name", key);
+			hiddenField.setAttribute("value", params[key]);
+			form.appendChild(hiddenField);
+		}
+
+		document.body.appendChild(form);
+		form.submit();
+
+	}
+</script>
 </head>
 <body>
-<h1>TEST</h1>
+	<div th:replace="layout/header::header"></div>
+	<div class="container">
+		<div class="page-header">
+			<h1>게시글 목록</h1>
+		</div>
+		<br />
+		<div class="pull-right" style="display:flex; justify-content:flex-end; align-items:center; width: 100%; margin: 10px 0;">
+			<!-- <a href="/board/form" class="btn btn-primary btn-block">등록</a> -->
+			<a href="#" th:onclick="goPost('/boardForm')"
+				class="btn btn-primary btn-block">등록</a>
+		</div>
+		<div id="search_change_board" >
+			<div align="right" class="d-flex" style="display:flex; justify-content:flex-end; align-items:center;">
+				<select id="search_board">
+					<option value="0">선택</option>
+					<option value="search_title">제목</option>
+					<option value="search_username">작성자</option>
+				</select> 
+				<input type="text" placeholder="검색어 입력" maxlength="50"
+					id="search_value" class="me-sm-2"/>
+				<button type="button" id="search_user_button" onclick="search_button()"
+				class="btn btn-secondary my-2 my-sm-0">검색</button>
+			</div>
+
+
+			<div id="mainHide">
+				
+				<table class="table table-hover">
+					<thead>
+						<tr>
+							<th scope="col">#</th>
+							<th scope="col">제목</th>
+							<th scope="col">작성자</th>
+							<th scope="col"></th>
+							<th scope="col">작성일</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="board : ${boardList}" class="table-light">
+							<td th:text="${board.id}"></td>
+							<!-- <td th:text="${board.title}" ></td> -->
+							<!-- <td><a href="#"
+								th:onclick="goPost('/board/view',{id:[[${board.id}]]},'POST'); return false;"
+								th:text="${board.title}"></a></td> -->
+							<!-- <a href="#"
+								th:onclick="goPost('/board/view',{id:[[${board.id}]]},'POST'); return false;"
+								><td th:text="${board.title}"></td></a> -->
+							<td th:onClick="goPost('/boardView',{id:[[${board.id}]]},'POST'); return false;" style="cursor:pointer;"
+							th:text="${board.title}"></td>
+							<!-- <td><a th:href="'/board/view/?id='+${board.id}" th:text="${board.title}"></a></td> -->
+							<td th:text="${board.user.nickname}"></td>
+							<td>
+								<span th:if="${board.user.role == 'ROLE_ADMIN'}" class="badge bg-danger">admin</span>
+								<span th:if="${board.user.role == 'ROLE_USER'}" class="badge bg-primary">user</span>
+							</td>
+							<td th:text="${#dates.format(board.wdate,'yyyy/MM/dd HH:mm')}"></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<br />
+			<!-- 페이지 내비게이션..  -->
+			<div style="display: flex; justify-content: center; align-items: center;">
+			<div role="toolbar" aria-label="Toolbar with button groups" class="btn-toolbar" >
+				<div class="btn-group me-2" role="group" aria-label="First group" th:with="startNumber=${T(java.lang.Math).floor(boardList.number/5)}*5+1, endNumber=(${boardList.totalPages} > ${startNumber}+4) ? ${startNumber}+4 : ${boardList.totalPages}">
+					<a class="btn btn-secondary" aria-label="Previous" href="/board/list?page=1">&#10218;</a>
+					
+					<a class="btn btn-secondary" th:href="@{/board/list(page=${boardList.number})}" th:style="${boardList.first} ? 'display:none'">&#10216;</a>
+					
+					
+					<a class="btn btn-secondary"  th:each="page :${#numbers.sequence(startNumber, endNumber)}" th:classappend="((${page} == ${boardList.number}+1) ? 'active')" 
+					th:href="@{/board/list(page=${page})}" th:text="${page}"><span class="sr-only"></span></a>
+					​
+					
+					<a  class="btn btn-secondary" th:href="@{/board/list(page=${boardList.number}+2)}" th:style="${boardList.last} ? 'display:none'">&rang;</a>
+					
+					<a class="btn btn-secondary" aria-label="Next" th:href="@{/board/list(page=${boardList.totalPages})}">&#10219;</a>
+				</div>
+			</div></div>
+		</div>
+	</div>
+
+	<script>
+	function search_button(){
+		var data = {
+				search_board : $('#search_board').val(),
+				search_value : $('#search_value').val()
+			};
+		$.ajax({
+			url : "/board/search",
+			type : "GET",
+			data : data,
+			headers : {
+				"Authorization" : "Basic " + btoa("havi" + ":" + "test")
+			},
+			success : function(htmldata) {
+				$('#search_change_board').html(htmldata);
+			},
+			error : function() {
+				alert('저장 실패!');
+			}
+		});
+	}
+	</script>
 </body>
 </html>
