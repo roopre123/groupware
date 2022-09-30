@@ -18,9 +18,18 @@ public class UserService {
 		return userRe;
 	}
 	
-	public Boolean existsByCode(String Code) {
-		return userRepository.existsByCode(Code);
+	public Boolean existsByCode(String code) {
+		return userRepository.existsByCode(code);
 	}
+	
+	public User findCodeByUsername(String username) {
+		return userRepository.findCodeByUsername(username);
+	}
+	
+	public User findByUsername(String username) {
+		return userRepository.findByUsername(username);
+	}
+	
 	
 	
 	

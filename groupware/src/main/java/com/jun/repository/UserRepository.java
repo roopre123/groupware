@@ -7,8 +7,10 @@ import com.jun.model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Integer>{
+	
 	public User findByUsername(String username);
 	public boolean existsByCode(String code);
-	public boolean existsByUsername(String username);
+	
+	public User findCodeByUsername(String username);
 
 }
