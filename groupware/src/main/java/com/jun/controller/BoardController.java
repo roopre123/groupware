@@ -1,12 +1,17 @@
 package com.jun.controller;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +27,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.jun.model.Board;
@@ -43,7 +49,7 @@ public class BoardController {
 	@Autowired
 	private FilesService filesService;
 	
-	private static final String Path = "/Users/roopre/data/projectPath";
+	private static final String Path = "/Users/roopre/data/projectPath/";
 	
 	@PreAuthorize("isAuthenticated()")
 	@RequestMapping(value = "/boardList", method = RequestMethod.GET)
@@ -109,6 +115,7 @@ public class BoardController {
 //		return null;
 //	}
 	
+	@PreAuthorize("isAuthenticated()")
 	@RequestMapping(value = "/boardWrite", method = RequestMethod.POST)
 	public ResponseEntity<?> boardWrite(@RequestParam("filess") List<MultipartFile> multiFiles,
 			Model model,Board board,@RequestParam("username") String username){
@@ -134,7 +141,7 @@ public class BoardController {
 					orginFileName = file.getOriginalFilename();
 					fileExtension = orginFileName.substring(orginFileName.lastIndexOf("."), orginFileName.length());
 					pyscFileName = uuid + fileExtension;
-					physicalPath = Path + "/";
+					physicalPath = Path;
 						
 					files = new Files(orginFileName, pyscFileName, file.getSize());
 					fileList.add(files);
@@ -156,12 +163,103 @@ public class BoardController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
-	@RequestMapping("/boardView")
+	@PreAuthorize("isAuthenticated()")
+	@RequestMapping(value =  "/boardView", method = RequestMethod.GET)
 	public String boardView(Board board, Model model) {
+		Board boardView = boardService.boardView(board.getId());
+		List<Files> files = filesService.findAllByBoard_id(board.getId());
 		
-		return null;
+		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User user = userService.findByUsername(userDetail.getUsername());
 		
+		model.addAttribute("user",user);
+		model.addAttribute("board",boardView);
+		model.addAttribute("files",files);
+		
+		return "board/boardView";
 		
 	}
+	
+	@PreAuthorize("isAuthenticated()")
+	@RequestMapping(value = "/fileDown", method = RequestMethod.POST)
+	public void download(HttpServletResponse response, Files files) throws IOException{
+		String downPath = Path + files.getPyscFileName();
+		String origName = filesService.findOrigFileNameByPyscFileName(files.getPyscFileName()).getOrigFileName();
+		byte[] fileByte = FileUtils.readFileToByteArray(new File(downPath));
+		
+		response.setContentType("multipart/form-data");
+		response.setHeader("Content-Disposition", "attachment; fileName=\"" + URLEncoder.encode(origName, "UTF-8")+"\";");
+	    response.setHeader("Content-Transfer-Encoding", "binary");
+
+	    response.getOutputStream().write(fileByte);
+	    response.getOutputStream().flush();
+	    response.getOutputStream().close();
+	}
+	
+	@PreAuthorize("isAuthenticated()")
+	@RequestMapping(value = "/boardUpdateForm", method = RequestMethod.POST)
+	public String boardUpdate(Board board, Model model) {
+		Board boardView = boardService.boardView(board.getId());
+		List<Files> files = filesService.findAllByBoard_id(board.getId());
+		
+		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User user = userService.findByUsername(userDetail.getUsername());
+		
+		model.addAttribute("user",user);
+		model.addAttribute("board",boardView);
+		model.addAttribute("fileList",files);
+		return "board/boardForm";
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/boardUpdate", method = RequestMethod.POST)
+	public Long boardUPdate(Board board, User user, @RequestParam("filess") List<MultipartFile> multiFiles, Model model) throws IllegalStateException, IOException {
+		
+		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User userSession = userService.findByUsername(userDetail.getUsername());
+		
+		board.setUser(userSession);
+		board.setCode(userSession.getCode());
+		board.setContent(board.getContent().replace("\r\n", "<br>"));
+		List<Files> boardFileList = filesService.findAllByBoard_id(board.getId());
+		Board test = boardService.write(board);
+		
+		
+		Files files = null;
+		String uuid, orginFileName, pyscFileName, physicalPath, fileExtension;
+		List<Files> fileList = new ArrayList<>();
+		
+		for(MultipartFile file : multiFiles) {
+			if( file == null || file.isEmpty() ) {
+				System.out.println("여기가 널인데? ");
+				for(Files f : boardFileList) {
+					filesService.savefile(f);
+				}
+			}else {
+				System.out.println("................-------->?");
+				uuid = UUID.randomUUID().toString();
+				orginFileName = file.getOriginalFilename();
+				fileExtension = orginFileName.substring(orginFileName.lastIndexOf("."), orginFileName.length());
+				pyscFileName = uuid + fileExtension;
+				physicalPath = Path;
+					
+				files = new Files(orginFileName, pyscFileName, file.getSize());
+				fileList.add(files);
+				files.setBoard(test);
+				
+				File dest = new File(physicalPath + pyscFileName);
+				file.transferTo(dest);
+				filesService.savefile(files);
+			}
+		}
+		
+		model.addAttribute("user",user);
+		model.addAttribute("board",board);
+		model.addAttribute("files",fileList);
+		
+		return test.getId();
+	}
+		
+		
 	
 }

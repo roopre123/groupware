@@ -18,6 +18,7 @@ import javax.persistence.PrePersist;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -58,6 +59,16 @@ public class Board {
 	public void update(String title, String content) {
 		this.title = title;
 		this.content = content;
+	}
+	
+	
+	@Builder
+	public Board(String title, String content, Date wdate, User user) {
+		super();
+		this.title = title;
+		this.content = content;
+		this.wdate = wdate;
+		this.user = user;
 	}
 
 }

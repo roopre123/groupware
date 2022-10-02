@@ -47,7 +47,7 @@
         	<!-- <input type="text" th:value="${#authentication.authorities}"/> 
         	사용자 권한 !-->
        		<input type="hidden" name="username" th:value="${#authentication.name}"/>
-	        <input id="board_id" type="hidden" th:value="${board?.id}"/>
+	        <input id="board_id" name="id" type="hidden" th:value="${board?.id}"/>
 	        <table class="table">
 	            <tr>
 	                <th style="padding:13px 0 0 15px;">title</th>
@@ -60,23 +60,75 @@
 	                </td>
 	            </tr>
 	            <tr>
-	                <th style="padding:13px 0 0 15px;">file</th>
-	                <td><input id="filess" name="filess" type="file" class="col-md-1 form-control input-sm" multiple="multiple"/></td>
+	                <th style="padding:13px 0 0 15px;">file </th>
+	                <td>
+	                	<input id="file-input" name="filess" type="file" class="col-md-1 form-control input-sm" multiple="multiple"/>
+	                </td>
 	            </tr>
 	        </table>
+	        <p th:if="${board?.id}"> * 파일을 추가하지 않으면 기존 파일로 저장됩니다.</p>
         </form>
         <div >
 	       
 	        <div class="right" style="display:flex; justify-content:flex-end; align-items:center;" >
-	            <button th:if="!${board?.id}" type="button" class="btn btn-primary" id="insert">저장</button>
-	            <button th:if="${board?.id}" type="button" class="btn btn-secondary" id="update">수정</button>
+	            <button th:if="!${board?.id}" type="button" class="btn btn-outline-secondary" id="insert">저장</button>
+	            <button th:if="${board?.id}" type="button" class="btn btn-outline-secondary" id="update">수정</button>
 	        </div>
         </div>
     </div>
 
     <script th:src="@{/js/jquery.min.js}"></script>
+    <!-- <script>
+    const handler = {
+            init() {
+                const fileInput = document.querySelector('#file-input');
+                const preview = document.querySelector('#preview');
+                fileInput.addEventListener('change', () => {  
+                    console.dir(fileInput)                  
+                    const files = Array.from(fileInput.files)
+                    files.forEach(file => {
+                        preview.innerHTML += `
+                        <p id="${file.lastModified}">
+                            ${file.name}
+                            <button data-index='${file.lastModified}' class='file-remove'>X</button>
+                        </p>`;
+                    });
+                });
+            },
+
+            removeFile: () => {
+                document.addEventListener('click', (e) => {
+                if(e.target.className !== 'file-remove') return;
+                const removeTargetId = e.target.dataset.index;
+                const removeTarget = document.getElementById(removeTargetId);
+                const files = document.querySelector('#file-input').files;
+                const dataTranster = new DataTransfer();
+
+                // document.querySelector('#file-input').files =
+                //             Array.from(files).filter(file => file.lastModified !== removeTarget);
+
+            
+                Array.from(files)
+                    .filter(file => file.lastModified != removeTargetId)
+                    .forEach(file => {
+                    dataTranster.items.add(file);
+                 });
+    
+                document.querySelector('#file-input').files = dataTranster.files;
+
+                removeTarget.remove();
+            })
+            }
+        }
+
+        handler.init()
+        handler.removeFile()
+    </script> -->
     <script>
+    
+       
     $(document).ready(function () {
+    	    	
     	$('#insert').click(function (event) {
             event.preventDefault();
             
@@ -110,8 +162,40 @@
             });
             
         });
+    	
+    	$('#update').click(function (event) {
+            event.preventDefault();
+            
+            var formData = new FormData($('#form')[0]);
+            $('#insert').prop('disabled', true);
+            
+			for(let key of formData.keys()){
+				console.log(key);
+			}
+			
+			for(let value of formData.values()){
+				console.log(value);
+			}
+
+           $.ajax({
+                type: 'POST',
+                enctype: 'multipart/form-data',
+                url: '/boardUpdate',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    console.log('SUCCESS : ', data);
+                    location.href="/boardView?id="+data;
+                }
+            });
+            
+        });
+    	
+    	
     });
     </script>
+    
     <!-- <script th:if="${board?.id}">
         $('#update').click(function () {
         	var jsonData = JSON.stringify({
