@@ -32,7 +32,7 @@
 	<div class="container">
 		<div class="page-header">
 		<br>
-			<h1>게시글</h1>
+			<h1>게시글 [[${board.id}]]</h1>
 		</div>
 		<br /> 
 		<input id="board_id" type="hidden" th:value="${board?.id}" />
@@ -80,7 +80,7 @@
 				
 					<input th:if="${board?.user?.username == user?.username} or ${user?.role == 'ROLE_ADMIN'}" type="button"
 						class="btn btn-outline-secondary" id="update" value="수정"
-						th:onclick="goPost('/boardUpdateForm',{id:[[${board.id}]]},'POST')" />
+						th:onclick="goPost('/boardUpdateForm',{id:[[${board.id}]]},'POST')" require/>
 						
 					<input th:if="${board?.user?.username == user?.username} or ${user?.role == 'ROLE_ADMIN'}" type="button"
 						class="btn btn-outline-danger" id="delete" value="삭제" />
@@ -106,7 +106,26 @@
 	</div>
 
 	<script type="text/javascript">
-		
+		$("#delete").click(function(){
+			var jsonData = JSON.stringify({
+				id : $('#board_id').val()
+			});
+			alert(jsonData);
+			$.ajax({
+				url: "/boardDelete",
+				type: "POST",
+				data: jsonData,
+				contentType: "application/json",
+				success: function(data){
+					//console.log(data);
+					alert(data);
+					location.href="/boardList";
+				},
+				error : function(data){
+					alert(data);
+				}
+			});
+		});
 	</script>
 </body>
 </html>

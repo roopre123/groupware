@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -211,6 +214,7 @@ public class BoardController {
 		return "board/boardForm";
 	}
 	
+	@PreAuthorize("isAuthenticated()")
 	@ResponseBody
 	@RequestMapping(value = "/boardUpdate", method = RequestMethod.POST)
 	public Long boardUPdate(Board board, User user, @RequestParam("filess") List<MultipartFile> multiFiles, Model model) throws IllegalStateException, IOException {
@@ -220,6 +224,7 @@ public class BoardController {
 		
 		board.setUser(userSession);
 		board.setCode(userSession.getCode());
+		board.setWdate(new Date());
 		board.setContent(board.getContent().replace("\r\n", "<br>"));
 		List<Files> boardFileList = filesService.findAllByBoard_id(board.getId());
 		Board test = boardService.write(board);
@@ -258,6 +263,23 @@ public class BoardController {
 		model.addAttribute("files",fileList);
 		
 		return test.getId();
+	}
+	
+	@PreAuthorize("isAuthenticated()")
+	@Transactional
+	@RequestMapping(value = "/boardDelete" , method = RequestMethod.POST)
+	public ResponseEntity<?> boardDelete(@RequestBody Board board) {
+		List<Files> boardFileList = filesService.findAllByBoard_id(board.getId());
+		System.out.println(board.toString());
+		File file;
+		for (Files myFile : boardFileList) {
+			file = new File( Path + myFile.getPyscFileName() );
+			file.delete();
+		}
+		filesService.deleteAllByBoard_id(board.getId());
+		boardService.boardDelete(board.getId());
+		
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 		
 		

@@ -11,4 +11,6 @@ public interface FilesRepository extends JpaRepository<Files, Long>{
 	public List<Files> findAllByBoard_id(Long board_id);
 	
 	public Files findOrigFileNameByPyscFileName(String pyscFileName);
+	
+	public void deleteAllByBoard_id(Long board_id);
 }

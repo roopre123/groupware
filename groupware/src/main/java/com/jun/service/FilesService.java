@@ -26,4 +26,8 @@ public class FilesService {
 	public Files findOrigFileNameByPyscFileName(String pyscFileName) {
 		return filesRepository.findOrigFileNameByPyscFileName(pyscFileName);
 	}
+	
+	public void deleteAllByBoard_id(Long board_id) {
+		filesRepository.deleteAllByBoard_id(board_id);
+	}
 }
