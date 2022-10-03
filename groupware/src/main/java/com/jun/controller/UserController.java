@@ -1,10 +1,15 @@
 package com.jun.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -69,9 +74,26 @@ public class UserController {
 		}
 	}
 	
+	@PreAuthorize("isAuthenticated()")
+	@RequestMapping(value = "/myPage", method = RequestMethod.GET)
+	public String myPage(Model model) {
+		
+		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+		User user = userService.findByUsername(userDetail.getUsername());
+		
+		List<User> groupList = userService.findAllByCode(user.getCode());
+		
+		model.addAttribute("user", user);
+		model.addAttribute("userList", groupList);
+		
+		return "myPage";
+	}
+	
 	public User userNullCode(User user) {
 		user.setCode(null);
 		return user;
 	}
+	
+	
 
 }

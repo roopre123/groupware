@@ -1,5 +1,7 @@
 package com.jun.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.jun.model.User;
@@ -30,7 +32,9 @@ public class UserService {
 		return userRepository.findByUsername(username);
 	}
 	
-	
+	public List<User> findAllByCode(String code){
+		return userRepository.findAllByCode(code);
+	}
 	
 	
 }

@@ -58,7 +58,6 @@ public class BoardController {
 	@RequestMapping(value = "/boardList", method = RequestMethod.GET)
 	public String boardList(@PageableDefault (size =10, sort="id", direction= Sort.Direction.DESC ) Pageable pageable,
 			Model model, Board board, User user) {
-		System.out.println("boardListController");
 		
 		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User userCode = userService.findCodeByUsername(userDetail.getUsername());
@@ -236,24 +235,29 @@ public class BoardController {
 		
 		for(MultipartFile file : multiFiles) {
 			if( file == null || file.isEmpty() ) {
-				System.out.println("여기가 널인데? ");
 				for(Files f : boardFileList) {
 					filesService.savefile(f);
 				}
 			}else {
-				System.out.println("................-------->?");
 				uuid = UUID.randomUUID().toString();
 				orginFileName = file.getOriginalFilename();
 				fileExtension = orginFileName.substring(orginFileName.lastIndexOf("."), orginFileName.length());
 				pyscFileName = uuid + fileExtension;
 				physicalPath = Path;
-					
+				/* file = 클라이언트한테 넘겨받은 파일 정보
+				 * files = 클라이언트한테 넘겨받은 파일 정보로 만든 Files 객체 
+				 * boardFileList = 디비에 담겨있는 게시글의 파일 정보 들*/
 				files = new Files(orginFileName, pyscFileName, file.getSize());
 				fileList.add(files);
 				files.setBoard(test);
 				
 				File dest = new File(physicalPath + pyscFileName);
 				file.transferTo(dest);
+				for (Files f : boardFileList) {
+					File fd = new File( Path + f.getPyscFileName());
+					fd.delete();
+				}
+				filesService.deleteAllByBoard_id(test.getId());
 				filesService.savefile(files);
 			}
 		}
@@ -270,7 +274,6 @@ public class BoardController {
 	@RequestMapping(value = "/boardDelete" , method = RequestMethod.POST)
 	public ResponseEntity<?> boardDelete(@RequestBody Board board) {
 		List<Files> boardFileList = filesService.findAllByBoard_id(board.getId());
-		System.out.println(board.toString());
 		File file;
 		for (Files myFile : boardFileList) {
 			file = new File( Path + myFile.getPyscFileName() );
