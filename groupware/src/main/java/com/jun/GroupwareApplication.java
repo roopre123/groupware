@@ -14,7 +14,7 @@ import com.jun.repository.BoardRepository;
 import com.jun.repository.UserRepository;
 
 @SpringBootApplication
-public class GroupwareApplication /*implements CommandLineRunner*/{
+public class GroupwareApplication {//implements CommandLineRunner{
 	
 	@Autowired
 	BoardRepository board;
@@ -29,7 +29,7 @@ public class GroupwareApplication /*implements CommandLineRunner*/{
 	
 //	@Override
 //	public void run(String... args) throws Exception {
-//		User userr = user.findById("123").get();
+//		User userr = user.findById("roopre123").get();
 //		
 //		IntStream.rangeClosed(1,150).forEach(index -> board.save(Board.builder()
 //				.title("test" + index)
@@ -40,3 +40,5 @@ public class GroupwareApplication /*implements CommandLineRunner*/{
 //	}
 
 }
+
+

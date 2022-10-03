@@ -7,7 +7,7 @@
 <body>
 		<div th:each="memo: ${memoList}">
 			<div class="card border-secondary mb-3" style="max-width:20rem; margin:8px;">
-			  <div class="card-header">[[${memo.user.username}]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			  <div class="card-header">[[${memo.user.nickname}]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			  	<small th:text="${#dates.format(memo?.mdate,'yyyy/MM/dd HH:mm')}"></small>
 			  </div>
 			  <div class="card-body">

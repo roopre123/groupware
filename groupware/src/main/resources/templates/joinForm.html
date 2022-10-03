@@ -65,7 +65,8 @@
 						success: function(data){
 							Swal.fire({
 								title : "코드 가 발급되었습니다.",
-								text: data.code
+								text: data.code,
+								confirmButtonColor: '#252525'
 								}).then(function(){
 									location.href="/loginForm";
 								});

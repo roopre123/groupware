@@ -28,4 +28,5 @@ public class MemoService {
 	public void deleteMemo(Long id) {
 		memoRepository.deleteById(id);
 	}
+	
 }
