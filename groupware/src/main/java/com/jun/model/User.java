@@ -37,6 +37,14 @@ public class User {
 	private List<Board> files = new ArrayList<>();
 	
 	
+	@OneToMany(
+	    	   mappedBy = "user",
+	    	   cascade = {CascadeType.PERSIST, CascadeType.REMOVE},
+	    	   orphanRemoval = true
+	    )
+	private List<Memo> memos = new ArrayList<>();
+	
+	
 	public User() { }	
 	
 	

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+		<div th:each="memo: ${memoList}">
+			<div class="card border-secondary mb-3" style="max-width:20rem; margin:8px;">
+			  <div class="card-header">[[${memo.user.username}]]&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+			  	<small th:text="${#dates.format(memo?.mdate,'yyyy/MM/dd HH:mm')}"></small>
+			  </div>
+			  <div class="card-body">
+			    <p class="card-text">[(${memo.mcontent})]</p>
+			    <div>
+			    	<input type="button" class="btn btn-outline-danger" id="delete" th:onclick="deleteMemo([[${memo.mid}]])" value="삭제"/>
+			    </div>
+			  </div>
+			</div>
+		</div>
+</body>
+</html>

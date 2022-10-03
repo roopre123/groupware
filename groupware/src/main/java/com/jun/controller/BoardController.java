@@ -280,8 +280,5 @@ public class BoardController {
 		boardService.boardDelete(board.getId());
 		
 		return new ResponseEntity<>(HttpStatus.OK);
-	}
-		
-		
-	
+	}	
 }

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8" http-equiv="Content-Type" 
+    name="viewport" content="width=device-width, initial-scale=1">
+<title>메모장</title>
+<link rel="stylesheet" th:href="@{/css/bootstrap.css}" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<script th:src="@{/js/jquery.min.js}"></script>
+</head>
+<script type="text/javascript">
+$(document).ready(function () {
+	
+	searchAll();
+});
+	function searchAll(){
+		$.ajax({
+			url: "/memoList",
+			type: "POST",
+			contentType: "application/json",
+			success: function(data){
+				$("#containerBox").html(data)
+			}
+		});
+	}
+	
+	function deleteMemo(no){
+		var jsonData = JSON.stringify({
+			mid: no
+		});
+		$.ajax({
+			url: "/memoDel",
+			type: "POST",
+			data: jsonData,
+			contentType: "application/json",
+			success: function(data){
+				console.log(data);
+				searchAll();
+			}
+		});
+	}
+
+</script>
+<body>
+	<div th:replace="layout/header::header"></div>
+	<div class="container">
+		<div class="page-header">
+		<br/><br/>
+			<h1>메모장</h1>
+		</div>
+		<div>
+			<input type="hidden" name="username" id="username" th:value="${#authentication.name}"/>
+			<textarea id="mcontent" name="mcontent" class="col-md-1 form-control input-sm" maxlength="200" rows="7" style="height: 100px;"></textarea>
+			<br/>
+	        <div style="display:flex; justify-content:flex-end; align-items:center;">
+	        	<button type="button" class="btn btn-outline-secondary" id="insert">저장</button>
+	        </div>
+		</div>
+		<hr>
+		<div id="containerBox" style="display:inline-flex; justify-content:flex-start; flex-wrap:wrap; align-content: stretch;">
+			
+		</div>
+	</div>
+<script type="text/javascript">
+	$("#insert").click(function (){
+		var jsonData = JSON.stringify({
+			mcontent: $("#mcontent").val()
+		});
+		$.ajax({
+			url: "/memoWrite",
+			type: "POST",
+			data: jsonData,
+			contentType: "application/json",
+			success: function(data){
+				console.log(data);
+				searchAll();
+			}
+		});
+	});
+</script>
+</body>
+</html>
