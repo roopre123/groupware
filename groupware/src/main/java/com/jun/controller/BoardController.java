@@ -275,12 +275,6 @@ public class BoardController {
 		return test.getId();
 	}
 	
-//	for (Files f : boardFileList) {
-//		File fd = new File( Path + f.getPyscFileName());
-//		fd.delete();
-//	}
-//	filesService.deleteAllByBoard_id(test.getId());
-	
 	@PreAuthorize("isAuthenticated()")
 	@Transactional
 	@RequestMapping(value = "/boardDelete" , method = RequestMethod.POST)
