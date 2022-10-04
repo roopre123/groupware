@@ -234,14 +234,10 @@ public class BoardController {
 		try {
 			for(MultipartFile file : multiFiles) {
 				if( file == null || file.isEmpty() ) {
-					System.out.println("if");
 					for(Files f : boardFileList) {
-						System.out.println("===>>"+f.getOrigFileName());
 						Files fileresult = filesService.savefile(f);
-						System.out.println("---->>"+fileresult.getOrigFileName());
 					}
 				}else {
-					System.out.println("else");
 					uuid = UUID.randomUUID().toString();
 					orginFileName = file.getOriginalFilename();
 					fileExtension = orginFileName.substring(orginFileName.lastIndexOf("."), orginFileName.length());
