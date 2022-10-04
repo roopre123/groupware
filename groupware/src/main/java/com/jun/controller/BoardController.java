@@ -216,11 +216,11 @@ public class BoardController {
 	@PreAuthorize("isAuthenticated()")
 	@ResponseBody
 	@RequestMapping(value = "/boardUpdate", method = RequestMethod.POST)
-	public Long boardUPdate(Board board, User user, @RequestParam("filess") List<MultipartFile> multiFiles, Model model) throws IllegalStateException, IOException {
+	public Long boardUPdate(Board board, User user, @RequestParam("filess") List<MultipartFile> multiFiles, Model model)  {
 		
 		UserDetails userDetail = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 		User userSession = userService.findByUsername(userDetail.getUsername());
-		
+		System.out.println(board.getId());
 		board.setUser(userSession);
 		board.setCode(userSession.getCode());
 		board.setWdate(new Date());
@@ -228,38 +228,48 @@ public class BoardController {
 		List<Files> boardFileList = filesService.findAllByBoard_id(board.getId());
 		Board test = boardService.write(board);
 		
-		
 		Files files = null;
 		String uuid, orginFileName, pyscFileName, physicalPath, fileExtension;
 		List<Files> fileList = new ArrayList<>();
-		
-		for(MultipartFile file : multiFiles) {
-			if( file == null || file.isEmpty() ) {
-				for(Files f : boardFileList) {
-					filesService.savefile(f);
+		try {
+			for(MultipartFile file : multiFiles) {
+				if( file == null || file.isEmpty() ) {
+					System.out.println("if");
+					for(Files f : boardFileList) {
+						System.out.println("===>>"+f.getOrigFileName());
+						Files fileresult = filesService.savefile(f);
+						System.out.println("---->>"+fileresult.getOrigFileName());
+					}
+				}else {
+					System.out.println("else");
+					uuid = UUID.randomUUID().toString();
+					orginFileName = file.getOriginalFilename();
+					fileExtension = orginFileName.substring(orginFileName.lastIndexOf("."), orginFileName.length());
+					pyscFileName = uuid + fileExtension;
+					physicalPath = Path;
+					/* file = 클라이언트한테 넘겨받은 파일 정보
+					 * files = 클라이언트한테 넘겨받은 파일 정보로 만든 Files 객체 
+					 * boardFileList = 디비에 담겨있는 게시글의 파일 정보 들*/
+					files = new Files(orginFileName, pyscFileName, file.getSize());
+					fileList.add(files);
+					files.setBoard(test);
+					
+					File dest = new File(physicalPath + pyscFileName);
+					file.transferTo(dest);
+					
+					
+					filesService.savefile(files);
 				}
-			}else {
-				uuid = UUID.randomUUID().toString();
-				orginFileName = file.getOriginalFilename();
-				fileExtension = orginFileName.substring(orginFileName.lastIndexOf("."), orginFileName.length());
-				pyscFileName = uuid + fileExtension;
-				physicalPath = Path;
-				/* file = 클라이언트한테 넘겨받은 파일 정보
-				 * files = 클라이언트한테 넘겨받은 파일 정보로 만든 Files 객체 
-				 * boardFileList = 디비에 담겨있는 게시글의 파일 정보 들*/
-				files = new Files(orginFileName, pyscFileName, file.getSize());
-				fileList.add(files);
-				files.setBoard(test);
-				
-				File dest = new File(physicalPath + pyscFileName);
-				file.transferTo(dest);
+			}
+			if( multiFiles.get(0).getSize() != 0 ) {
 				for (Files f : boardFileList) {
 					File fd = new File( Path + f.getPyscFileName());
 					fd.delete();
 				}
 				filesService.deleteAllByBoard_id(test.getId());
-				filesService.savefile(files);
 			}
+		}catch (Exception e) {
+			System.out.println(e.getMessage());
 		}
 		
 		model.addAttribute("user",user);
@@ -268,6 +278,12 @@ public class BoardController {
 		
 		return test.getId();
 	}
+	
+//	for (Files f : boardFileList) {
+//		File fd = new File( Path + f.getPyscFileName());
+//		fd.delete();
+//	}
+//	filesService.deleteAllByBoard_id(test.getId());
 	
 	@PreAuthorize("isAuthenticated()")
 	@Transactional
