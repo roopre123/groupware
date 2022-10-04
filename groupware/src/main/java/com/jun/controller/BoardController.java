@@ -74,49 +74,6 @@ public class BoardController {
 		return "board/boardForm";
 	}
 	
-//	@RequestMapping(value = "/boardWrite", method = RequestMethod.POST)
-//	public ResponseEntity<?> boardWrite(@RequestParam("files") MultipartFile[] multiFiles,
-//			Model model, Board board){
-//		Map<String, Object> result = new HashMap<>();
-//		System.out.println("test.....");
-//		
-//		try {
-//			Files files = null;
-//			String uuid, orginFileName, pyscFileName, physic alPath, fileExtension;
-//			List<Files> fileList = new ArrayList<>();
-//			
-//			for (int i = 0; i< multiFiles.length; i++) {
-//				if(!multiFiles[i].isEmpty()) {
-//					
-//					System.out.println("Path : " + Path);
-//					System.out.println("file.getOriginalFilename : " + multiFiles[i].getOriginalFilename());
-//					System.out.println("file size : " + multiFiles[i].getSize());
-//					
-//					uuid = UUID.randomUUID().toString();
-//					orginFileName = multiFiles[i].getOriginalFilename();
-//					fileExtension = orginFileName.substring(orginFileName.lastIndexOf("."), orginFileName.length());
-//					pyscFileName = uuid + fileExtension;
-//					physicalPath = Path + "/";
-//					
-//					files = new Files(orginFileName, pyscFileName, multiFiles[i].getSize());
-//					fileList.add(files);
-//					
-//					System.out.println("dest : " + physicalPath + pyscFileName );
-//					File dest = new File(physicalPath + pyscFileName);
-//					multiFiles[i].transferTo(dest);
-//					
-//				}
-//			}
-//			result.put("success", true);
-//			result.put("fileList", fileList);
-//		}catch (Exception e){
-//			result.put("success", false);
-//			result.put("message", e.getMessage());
-//		}
-//		
-//		return null;
-//	}
-	
 	@PreAuthorize("isAuthenticated()")
 	@RequestMapping(value = "/boardWrite", method = RequestMethod.POST)
 	public ResponseEntity<?> boardWrite(@RequestParam("filess") List<MultipartFile> multiFiles,
